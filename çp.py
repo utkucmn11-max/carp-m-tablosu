@@ -1,67 +1,55 @@
 import streamlit as st
-import time
+import random
 
 # Sayfa Ayarları
-st.set_page_config(page_title="Hızlı Çarpım Tablosu Öğretici", page_icon="🔢")
+st.set_page_config(page_title="Hızlı Çarpım Tablosu", page_icon="🔢")
 
-st.title("🔢 Çarpım Tablosu Kahramanı Ol!")
-st.subheader("Hiç bilmeyenler için en hızlı öğrenme platformu ✨")
+# Hafıza Kontrolü (Sorunun değişmemesi için)
+if 's1' not in st.session_state:
+    st.session_state.s1 = random.randint(2, 9)
+if 's2' not in st.session_state:
+    st.session_state.s2 = random.randint(2, 9)
+if 'score' not in st.session_state:
+    st.session_state.score = 0
 
-# Öğrenme Aşamaları
+st.title("🔢 Çarpım Tablosu Kahramanı")
+
 tab1, tab2, tab3 = st.tabs(["💡 Mantığını Anla", "🏋️ Alıştırma Yap", "🏆 Kendini Sına"])
 
 with tab1:
-    st.header("1. Adım: Toplamanın Kısa Yolu")
-    st.write("""
-    Çarpma aslında sadece **hızlı toplamadır**. 
-    Örneğin; $3 \\times 4$ demek, 3 tane 4'ü yan yana koyup toplamak demektir:  
-    **4 + 4 + 4 = 12** 🍎🍎🍎🍎 + 🍎🍎🍎🍎 + 🍎🍎🍎🍎
-    """)
+    st.header("1. Adım: Toplamanın Kısayolu")
+    st.write("Çarpma işlemi aslında aynı sayıyı defalarca toplamanın hızlı yoludur.")
     
     sayi = st.slider("Hangi sayıyı öğrenmek istersin?", 1, 10, 5)
-    st.info(f"Şu an {sayi}'ler basamağına bakıyorsun. Her adımda üzerine {sayi} ekleyerek ilerle!")
-    
     for i in range(1, 11):
-        st.write(f"👉 {i} tane {sayi} = **{i * sayi}**")
+        st.write(f"{i} tane {sayi} yanyana gelirse: **{i * sayi}** eder. 🍎")
 
 with tab2:
-    st.header("2. Adım: Görsel Alıştırma")
-    st.write("Sayıların ritmini hisset! 🎵")
+    st.header("2. Adım: Görsel Deneme")
+    c1, c2 = st.columns(2)
+    with c1:
+        n1 = st.number_input("Sayı 1:", 1, 10, 3)
+    with c2:
+        n2 = st.number_input("Sayı 2:", 1, 10, 4)
     
-    col1, col2 = st.columns(2)
-    with col1:
-        soru_sayi = st.number_input("Bir sayı seç:", 1, 10, 2)
-    with col2:
-        hedef = st.selectbox("Kaçla çarpalım?", list(range(1, 11)))
-    
-    if st.button("Sonucu Gör"):
-        st.success(f"Cevap: {soru_sayi * hedef} ✅")
-        st.balloons()
+    if st.button("Sonucu Hesapla"):
+        st.info(f"{n1} x {n2} = {n1*n2}")
 
 with tab3:
-    st.header("3. Adım: Hız Testi")
-    st.write("Bakalım ne kadar hızlısın? ⚡")
+    st.header("3. Adım: Hız Testi ⚡")
+    st.write(f"### Soru: {st.session_state.s1} x {st.session_state.s2} kaçtır?")
     
-    if 'score' not in st.session_state:
-        st.session_state.score = 0
-
-    import random
-    s1 = random.randint(2, 9)
-    s2 = random.randint(2, 9)
-    
-    st.write(f"### Soru: {s1} x {s2} kaçtır?")
-    cevap = st.number_input("Cevabını buraya yaz:", min_value=0)
+    user_answer = st.number_input("Cevabınız:", min_value=0, key="answer_input")
     
     if st.button("Kontrol Et"):
-        if cevap == s1 * s2:
+        if user_answer == st.session_state.s1 * st.session_state.s2:
+            st.success("Tebrikler! Doğru cevap. 🎉")
             st.session_state.score += 1
-            st.balloons()
-            st.success(f"Harika! Puanın: {st.session_state.score} ⭐")
+            # Yeni soru oluştur
+            st.session_state.s1 = random.randint(2, 9)
+            st.session_state.s2 = random.randint(2, 9)
+            st.rerun() # Sayfayı yenileyerek yeni soruyu getir
         else:
-            st.error(f"Üzgünüm, doğru cevap {s1 * s2} olmalıydı. Tekrar dene! 💪")
+            st.error(f"Hatalı! Tekrar düşünmelisin. 💪")
 
-st.sidebar.markdown("---")
-st.sidebar.write("### 💡 Küçük İpuçları")
-st.sidebar.info("- 5'lerle çarparken sonuç hep 0 veya 5 ile biter. 🖐️")
-st.sidebar.info("- 9'larla çarparken sonuçların rakamları toplamı hep 9'dur! 🧠")
-st.sidebar.info("- 0 ile neyi çarparsan çarp, sonuç koca bir 0 olur! 🌪️")
+st.sidebar.metric("Toplam Puanın", st.session_state.score)
