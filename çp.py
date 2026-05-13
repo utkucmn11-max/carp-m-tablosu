@@ -195,18 +195,22 @@ st.markdown(f"""
 # ── Cevap girişi ──
 if not st.session_state.cevaplandi:
     with st.form("cevap_formu", clear_on_submit=True):
-        cevap_input = st.number_input(
+        cevap_input = st.text_input(
             "Cevabını gir:",
-            min_value=0,
-            max_value=10000,
-            step=1,
+            placeholder="Cevabını buraya yaz...",
             label_visibility="collapsed"
         )
         gonder = st.form_submit_button("✅ Kontrol Et", use_container_width=True)
 
     if gonder:
-        cevabi_kontrol(int(cevap_input))
-        st.rerun()
+        cevap_temiz = cevap_input.strip()
+        if cevap_temiz == "":
+            st.warning("⚠️ Lütfen bir cevap gir!")
+        elif not cevap_temiz.lstrip("-").isdigit():
+            st.warning("⚠️ Lütfen sadece sayı gir!")
+        else:
+            cevabi_kontrol(int(cevap_temiz))
+            st.rerun()
 
 # ── Geri Bildirim ──
 if st.session_state.geri_bildirim == "dogru":
@@ -241,3 +245,4 @@ with st.expander("📊 Çarpım Tablosu Referansı"):
     df = pd.DataFrame(data, index=range(1, 13))
     df.index.name = "×"
     st.dataframe(df, use_container_width=True)
+    
