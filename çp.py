@@ -1,100 +1,58 @@
-from flask import Flask, render_template_string, request
+import streamlit as st
 import random
 
-app = Flask(__name__)
+st.set_page_config(
+    page_title="Çarpım Tablosu Oyunu",
+    page_icon="🎯",
+    layout="centered"
+)
 
-score = 0
-num1 = random.randint(1, 10)
-num2 = random.randint(1, 10)
+# Session state oluştur
+if "score" not in st.session_state:
+    st.session_state.score = 0
 
-HTML = """
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Çarpım Tablosu Oyunu</title>
-    <style>
-        body {
-            font-family: Arial;
-            text-align: center;
-            background-color: #f0f8ff;
-            padding-top: 50px;
-        }
+if "num1" not in st.session_state:
+    st.session_state.num1 = random.randint(1, 10)
 
-        .box {
-            background: white;
-            width: 400px;
-            margin: auto;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 0 10px gray;
-        }
+if "num2" not in st.session_state:
+    st.session_state.num2 = random.randint(1, 10)
 
-        input {
-            padding: 10px;
-            font-size: 20px;
-            width: 100px;
-        }
+# Başlık
+st.title("🎯 Çarpım Tablosu Öğreniyorum")
+st.write("Doğru cevabı yaz ve puan kazan!")
 
-        button {
-            padding: 10px 20px;
-            font-size: 18px;
-            background: green;
-            color: white;
-            border: none;
-            border-radius: 10px;
-        }
+# Soru
+st.subheader(
+    f"{st.session_state.num1} × {st.session_state.num2} = ?"
+)
 
-        h1 {
-            color: darkblue;
-        }
-    </style>
-</head>
-<body>
+# Kullanıcı cevabı
+answer = st.number_input(
+    "Cevabın:",
+    step=1,
+    format="%d"
+)
 
-<div class="box">
-    <h1>Çarpım Tablosu Öğreniyorum 🎯</h1>
+# Buton
+if st.button("Kontrol Et"):
 
-    <h2>{{ num1 }} × {{ num2 }} = ?</h2>
-
-    <form method="POST">
-        <input type="number" name="answer" required>
-        <br><br>
-        <button type="submit">Kontrol Et</button>
-    </form>
-
-    <h3>{{ message }}</h3>
-    <h3>Puan: {{ score }}</h3>
-</div>
-
-</body>
-</html>
-"""
-
-@app.route("/", methods=["GET", "POST"])
-def home():
-    global num1, num2, score
-
-    message = ""
-
-    if request.method == "POST":
-        user_answer = int(request.form["answer"])
-
-        if user_answer == num1 * num2:
-            message = "✅ Doğru!"
-            score += 1
-        else:
-            message = f"❌ Yanlış! Doğru cevap: {num1 * num2}"
-
-        num1 = random.randint(1, 10)
-        num2 = random.randint(1, 10)
-
-    return render_template_string(
-        HTML,
-        num1=num1,
-        num2=num2,
-        message=message,
-        score=score
+    correct_answer = (
+        st.session_state.num1 *
+        st.session_state.num2
     )
 
-if __name__ == "__main__":
-    app.run(debug=True)
+    if answer == correct_answer:
+        st.success("✅ Doğru cevap!")
+        st.session_state.score += 1
+    else:
+        st.error(
+            f"❌ Yanlış! Doğru cevap: {correct_answer}"
+        )
+
+    # Yeni soru oluştur
+    st.session_state.num1 = random.randint(1, 10)
+    st.session_state.num2 = random.randint(1, 10)
+
+# Puan
+st.markdown("---")
+st.subheader(f"🏆 Puan: {st.session_state.score}")
